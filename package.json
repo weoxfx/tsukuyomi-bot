@@ -25,6 +25,7 @@
   "description": "Multi-purpose Discord bot with advanced moderation and customization features",
   "dependencies": {
     "@napi-rs/canvas": "^0.1.44",
+    "@snazzah/davey": "^0.1.10",
     "ascii-table": "^0.0.9",
     "bad-words": "^4.0.0",
     "bad-words-next": "^3.2.0",
