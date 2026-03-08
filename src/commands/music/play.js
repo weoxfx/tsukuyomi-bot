@@ -7,6 +7,49 @@ import Command from "../../structures/Command.js";
 import { EmbedBuilder } from "discord.js";
 import { getRandomFooter } from "../../utils/raphael.js";
 
+/**
+ * Attempt to play, retrying once with a fresh connection if the first attempt fails.
+ */
+async function safePlay(client, player, ctx, voiceChannel) {
+  console.log(
+    `[Music Debug] About to play - connected: ${player.connected}, isReady: ${player.connection?.isReady}, establishing: ${player.connection?.establishing}, queue: ${player.queue.length}`,
+  );
+  try {
+    await player.play();
+    console.log(`[Music Debug] Play succeeded`);
+    return true;
+  } catch (err) {
+    console.error("[Music] First play attempt failed:", err.message);
+    // Retry: destroy stale player, create fresh connection, and try again
+    try {
+      // Save queue before destroying (Queue extends Array)
+      const savedQueue = [...player.queue];
+      player.destroy();
+      client.riffy.players.delete(ctx.guild.id);
+
+      const newPlayer = client.riffy.createConnection({
+        guildId: ctx.guild.id,
+        voiceChannel: voiceChannel.id,
+        textChannel: ctx.channel.id,
+        deaf: true,
+      });
+      console.log(`[Music Debug] Retry: created fresh player, connected: ${newPlayer.connected}`);
+
+      // Restore queue
+      for (const track of savedQueue) {
+        newPlayer.queue.add(track);
+      }
+
+      await newPlayer.play();
+      console.log(`[Music Debug] Retry play succeeded`);
+      return true;
+    } catch (retryErr) {
+      console.error("[Music] Retry play also failed:", retryErr.message);
+      return false;
+    }
+  }
+}
+
 export default class Play extends Command {
   constructor(client) {
     super(client, {
@@ -95,7 +138,9 @@ export default class Play extends Command {
         textChannel: ctx.channel.id,
         deaf: true,
       });
-      console.log(`[Music Debug] Created new player for guild ${ctx.guild.id}, connected: ${player.connected}, connection.isReady: ${player.connection?.isReady}`);
+      console.log(
+        `[Music Debug] Created new player for guild ${ctx.guild.id}, connected: ${player.connected}, connection.isReady: ${player.connection?.isReady}`,
+      );
     }
 
     // Resolve the query
@@ -146,12 +191,8 @@ export default class Play extends Command {
       await ctx.sendMessage({ embeds: [embed] });
 
       if (!player.playing && !player.paused) {
-        try {
-          console.log(`[Music Debug] About to play - connected: ${player.connected}, connection.isReady: ${player.connection?.isReady}, establishing: ${player.connection?.establishing}, queue: ${player.queue.length}`);
-          await player.play();
-          console.log(`[Music Debug] Play succeeded`);
-        } catch (err) {
-          console.error("[Music] Failed to play track:", err.message);
+        const success = await safePlay(client, player, ctx, voiceChannel);
+        if (!success) {
           return ctx.sendMessage({
             embeds: [
               {
@@ -211,12 +252,8 @@ export default class Play extends Command {
       await ctx.sendMessage({ embeds: [embed] });
 
       if (!player.playing && !player.paused) {
-        try {
-          console.log(`[Music Debug] About to play single track - connected: ${player.connected}, connection.isReady: ${player.connection?.isReady}, establishing: ${player.connection?.establishing}, queue: ${player.queue.length}`);
-          await player.play();
-          console.log(`[Music Debug] Play succeeded`);
-        } catch (err) {
-          console.error("[Music] Failed to play track:", err.message);
+        const success = await safePlay(client, player, ctx, voiceChannel);
+        if (!success) {
           return ctx.sendMessage({
             embeds: [
               {

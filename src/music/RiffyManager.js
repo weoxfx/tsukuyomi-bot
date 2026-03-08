@@ -119,6 +119,20 @@ class RiffyManager {
     this.riffy.on('playerDestroy', (player) => {
       logger.info(`[RIFFY] Player destroyed for guild ${player.guildId}`);
     });
+
+    // Debug events - critical for diagnosing connection issues
+    this.riffy.on('debug', (...args) => {
+      const msg = args.join(' ');
+      // Only log connection-related debug messages
+      if (msg.includes('CONNECTION') || msg.includes('play()') || msg.includes('Rest') || msg.includes('playerUpdate') || msg.includes('Voice') || msg.includes('connectionRestored') || msg.includes('Waiting') || msg.includes('Timed out')) {
+        console.log(`[RIFFY Debug] ${msg}`);
+      }
+    });
+
+    // playerUpdate events
+    this.riffy.on('playerUpdate', (player, packet) => {
+      console.log(`[RIFFY playerUpdate] Guild ${player.guildId} - connected: ${packet.state?.connected}, position: ${packet.state?.position}`);
+    });
   }
 
   /**

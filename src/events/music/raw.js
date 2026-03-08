@@ -24,7 +24,9 @@ class RawEvent extends Event {
       return;
     }
 
-    console.log(`[Music Debug] Raw event received: ${data.t} for guild ${data.d?.guild_id}`);
+    console.log(
+      `[Music Debug] Raw event received: ${data.t} for guild ${data.d?.guild_id}`,
+    );
 
     // For VOICE_SERVER_UPDATE, check if endpoint exists
     // Discord sometimes sends this without endpoint during region changes
@@ -42,10 +44,14 @@ class RawEvent extends Event {
     if (this.client.riffy) {
       try {
         const player = this.client.riffy.players.get(data.d?.guild_id);
-        console.log(`[Music Debug] Player exists: ${!!player}, riffy.clientId: ${this.client.riffy.clientId}`);
+        console.log(
+          `[Music Debug] Player exists: ${!!player}, riffy.clientId: ${this.client.riffy.clientId}`,
+        );
         await this.client.riffy.updateVoiceState(data);
         if (player) {
-          console.log(`[Music Debug] After updateVoiceState - connected: ${player.connected}, connection.isReady: ${player.connection?.isReady}, establishing: ${player.connection?.establishing}`);
+          console.log(
+            `[Music Debug] After updateVoiceState - connected: ${player.connected}, connection.isReady: ${player.connection?.isReady}, establishing: ${player.connection?.establishing}`,
+          );
         }
       } catch (error) {
         console.error(`[Music] Error updating voice state:`, error.message);
