@@ -11,17 +11,50 @@ import { getRandomFooter } from "../../utils/raphael.js";
  * Bypass player.play()'s connected check by sending voice + track together
  * in a single REST request. NodeLink disconnects voice (code 4017) when no
  * track is loaded, so we must send both atomically.
+ *
+ * For already-playing players (queue additions), falls back to normal play().
  */
 async function safePlay(client, player) {
-  // Wait for Discord voice credentials to arrive and be sent to the node.
-  // This may throw on timeout, but we still try to play if credentials exist.
-  try {
-    await player.connection.resolve();
-  } catch (e) {
-    console.log(
-      `[Music] connection.resolve() failed: ${e.message} — will attempt play anyway`,
-    );
+  if (!player._voiceDataPromise) {
+    // Player was already connected (e.g. adding to existing queue).
+    // Voice is established, use normal play.
+    try {
+      await player.play();
+      return true;
+    } catch (e) {
+      console.error("[Music] play() failed:", e.message);
+      return false;
+    }
   }
+
+  // Wait for the intercepted voice credentials from Connection.checkAndSend
+  let voiceData;
+  try {
+    voiceData = await Promise.race([
+      player._voiceDataPromise,
+      new Promise((_, rej) =>
+        setTimeout(
+          () => rej(new Error("Voice credentials timeout (15s)")),
+          15000,
+        ),
+      ),
+    ]);
+  } catch (e) {
+    console.error(`[Music] ${e.message}`);
+    // Restore original method on failure
+    if (player._origUpdateVoice) {
+      player.connection.updatePlayerVoiceData =
+        player._origUpdateVoice;
+    }
+    return false;
+  }
+
+  // Restore original updatePlayerVoiceData for future use (region changes, etc.)
+  if (player._origUpdateVoice) {
+    player.connection.updatePlayerVoiceData = player._origUpdateVoice;
+    delete player._origUpdateVoice;
+  }
+  delete player._voiceDataPromise;
 
   if (!player.queue.length) return false;
 
@@ -33,31 +66,20 @@ async function safePlay(client, player) {
   player.playing = true;
   player.position = 0;
 
-  // Build a combined payload: voice credentials + track in one PATCH.
-  // This prevents NodeLink from dropping voice before it has a track to play.
-  const data = {
-    track: { encoded: player.current.track },
-  };
-
-  const vc = player.connection.voice;
-  if (vc.sessionId && vc.endpoint && vc.token) {
-    data.voice = {
-      sessionId: vc.sessionId,
-      endpoint: vc.endpoint,
-      token: vc.token,
-    };
-  }
-
+  // Send combined voice + track in one PATCH so NodeLink connects AND plays atomically
   try {
     await player.node.rest.updatePlayer({
       guildId: player.guildId,
-      data,
+      data: {
+        voice: voiceData,
+        track: { encoded: player.current.track },
+      },
     });
+    player.connection.establishing = true;
     console.log("[Music] Combined voice+track REST request succeeded");
     return true;
   } catch (err) {
-    console.error("[Music] Combined voice+track REST request failed:", err.message);
-    // Restore queue state so the track isn't lost
+    console.error("[Music] Combined voice+track request failed:", err.message);
     player.queue.unshift(player.current);
     player.current = null;
     player.playing = false;
@@ -153,6 +175,25 @@ export default class Play extends Command {
         textChannel: ctx.channel.id,
         deaf: true,
       });
+
+      // Intercept Connection.updatePlayerVoiceData to prevent NodeLink from
+      // receiving voice-only data (which causes a 4017 disconnect because no
+      // track is loaded yet). We'll capture the voice data and send it bundled
+      // with the track in safePlay().
+      const origUpdate =
+        player.connection.updatePlayerVoiceData.bind(player.connection);
+      player._origUpdateVoice = origUpdate;
+      let resolveVoice;
+      player._voiceDataPromise = new Promise((r) => {
+        resolveVoice = r;
+      });
+      player.connection.updatePlayerVoiceData = async function (voiceData) {
+        // Signal that credentials are ready, but don't send to NodeLink yet
+        resolveVoice(voiceData);
+        // Mark establishing so checkAndSend's finally block resolves the deferred
+        this.establishing = true;
+        return {};
+      };
     }
 
     // Resolve the query

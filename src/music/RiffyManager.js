@@ -124,9 +124,23 @@ class RiffyManager {
       this.client.emit("musicQueueEnd", player);
     });
 
-    // Player create
+    // Player create — wrap internal play() to catch unhandled rejections
+    // Riffy's trackEnd handler calls player.play() without catch, which
+    // throws if the voice connection is dead (e.g. after a TrackExceptionEvent).
     this.riffy.on("playerCreate", (player) => {
       logger.info(`[RIFFY] Player created for guild ${player.guildId}`);
+      const origPlay = player.play.bind(player);
+      player.play = async function (...args) {
+        try {
+          return await origPlay(...args);
+        } catch (err) {
+          console.error(
+            `[Music] Internal play() failed for guild ${player.guildId}: ${err.message}`,
+          );
+          player.playing = false;
+          player.riffy.emit("queueEnd", player);
+        }
+      };
     });
 
     // Player destroy

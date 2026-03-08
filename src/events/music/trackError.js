@@ -28,10 +28,8 @@ class MusicTrackError extends Event {
         }]
       });
 
-      // Try to play next track
-      if (player.queue.length > 0) {
-        player.stop();
-      }
+      // Riffy's internal trackError handler already calls player.stop()
+      // which triggers trackEnd → play(). Don't call stop() again here.
     } catch (error) {
       this.client.logger.error('Error in musicTrackError event:', error);
     }
