@@ -23,6 +23,9 @@ class RawEvent extends Event {
     ) {
       return;
     }
+    console.log(
+      `[RAW DEBUG] Caught ${data.t} for guild ${data.d?.guild_id}. Sending to Riffy!`,
+    );
 
     // For VOICE_SERVER_UPDATE, check if endpoint exists
     // Discord sometimes sends this without endpoint during region changes
