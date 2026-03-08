@@ -95,6 +95,7 @@ export default class Play extends Command {
         textChannel: ctx.channel.id,
         deaf: true,
       });
+      console.log(`[Music Debug] Created new player for guild ${ctx.guild.id}, connected: ${player.connected}, connection.isReady: ${player.connection?.isReady}`);
     }
 
     // Resolve the query
@@ -146,9 +147,11 @@ export default class Play extends Command {
 
       if (!player.playing && !player.paused) {
         try {
+          console.log(`[Music Debug] About to play - connected: ${player.connected}, connection.isReady: ${player.connection?.isReady}, establishing: ${player.connection?.establishing}, queue: ${player.queue.length}`);
           await player.play();
+          console.log(`[Music Debug] Play succeeded`);
         } catch (err) {
-          console.error('[Music] Failed to play track:', err.message);
+          console.error("[Music] Failed to play track:", err.message);
           return ctx.sendMessage({
             embeds: [
               {
@@ -209,9 +212,11 @@ export default class Play extends Command {
 
       if (!player.playing && !player.paused) {
         try {
+          console.log(`[Music Debug] About to play single track - connected: ${player.connected}, connection.isReady: ${player.connection?.isReady}, establishing: ${player.connection?.establishing}, queue: ${player.queue.length}`);
           await player.play();
+          console.log(`[Music Debug] Play succeeded`);
         } catch (err) {
-          console.error('[Music] Failed to play track:', err.message);
+          console.error("[Music] Failed to play track:", err.message);
           return ctx.sendMessage({
             embeds: [
               {
