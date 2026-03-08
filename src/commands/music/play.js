@@ -43,8 +43,7 @@ async function safePlay(client, player) {
     console.error(`[Music] ${e.message}`);
     // Restore original method on failure
     if (player._origUpdateVoice) {
-      player.connection.updatePlayerVoiceData =
-        player._origUpdateVoice;
+      player.connection.updatePlayerVoiceData = player._origUpdateVoice;
     }
     return false;
   }
@@ -180,8 +179,9 @@ export default class Play extends Command {
       // receiving voice-only data (which causes a 4017 disconnect because no
       // track is loaded yet). We'll capture the voice data and send it bundled
       // with the track in safePlay().
-      const origUpdate =
-        player.connection.updatePlayerVoiceData.bind(player.connection);
+      const origUpdate = player.connection.updatePlayerVoiceData.bind(
+        player.connection,
+      );
       player._origUpdateVoice = origUpdate;
       let resolveVoice;
       player._voiceDataPromise = new Promise((r) => {

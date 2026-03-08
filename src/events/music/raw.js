@@ -26,11 +26,11 @@ class RawEvent extends Event {
 
     // For VOICE_SERVER_UPDATE, check if endpoint exists
     // Discord sometimes sends this without endpoint during region changes
-    if (data.t === GatewayDispatchEvents.VoiceServerUpdate) {
-      if (!data.d?.endpoint) {
-        return;
-      }
-    }
+    // if (data.t === GatewayDispatchEvents.VoiceServerUpdate) {
+    //   if (!data.d?.endpoint) {
+    //     return;
+    //   }
+    // }
 
     // Update Riffy's voice state with error handling
     if (this.client.riffy) {
