@@ -1,8 +1,6 @@
 import { Events, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js';
 import Giveaway from '../../models/Giveaway.js';
 import Guild from '../../models/Guild.js';
-import { endGiveawayById } from '../../commands/community/giveaway.js';
-
 export default {
   name: Events.InteractionCreate,
   async execute(interaction, client) {
@@ -128,6 +126,62 @@ async function updateGiveawayMessage(interaction, giveaway) {
   );
 
   await interaction.message.edit({ embeds: [embed], components: [row] });
+}
+
+// End a giveaway and announce winners
+export async function endGiveawayById(guild, giveaway) {
+  try {
+    const winnerIds = giveaway.pickWinners();
+    giveaway.winnerIds = winnerIds;
+    giveaway.ended = true;
+    await giveaway.save();
+
+    const channel = guild.channels.cache.get(giveaway.channelId);
+    if (!channel) return;
+
+    const winnerMentions = winnerIds.length > 0
+      ? winnerIds.map(id => `<@${id}>`).join(', ')
+      : 'No valid participants';
+
+    const embed = new EmbedBuilder()
+      .setTitle('『 GIVEAWAY ENDED 』')
+      .setDescription(
+        `**▸ Prize:** ${giveaway.prize}\n\n` +
+        `**▸ Winners:** ${winnerMentions}\n` +
+        `**▸ Hosted by:** <@${giveaway.hostId}>\n` +
+        `**▸ Participants:** ${giveaway.participants.length}`
+      )
+      .setColor('#ff4757')
+      .setTimestamp();
+
+    const row = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setCustomId('giveaway_enter')
+        .setLabel(`◉ Enter (${giveaway.participants.length})`)
+        .setStyle(ButtonStyle.Primary)
+        .setDisabled(true),
+      new ButtonBuilder()
+        .setCustomId('giveaway_participants')
+        .setLabel('◇ Participants')
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(true)
+    );
+
+    try {
+      const message = await channel.messages.fetch(giveaway.messageId);
+      await message.edit({ embeds: [embed], components: [row] });
+    } catch (_) {}
+
+    if (winnerIds.length > 0) {
+      await channel.send({
+        content: `${winnerMentions} — Congratulations! You won **${giveaway.prize}**!`
+      });
+    } else {
+      await channel.send({ content: `The giveaway for **${giveaway.prize}** ended with no participants.` });
+    }
+  } catch (error) {
+    console.error('Error ending giveaway:', error);
+  }
 }
 
 // Export function to check and end giveaways (called from scheduler)

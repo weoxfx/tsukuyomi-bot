@@ -2823,7 +2823,7 @@ async function handleGiveawayCommand(interaction, client, guildConfig) {
   const { successEmbed, errorEmbed, infoEmbed, GLYPHS } = await import('../../utils/embeds.js');
   const { EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = await import('discord.js');
   const Giveaway = (await import('../../models/Giveaway.js')).default;
-  const { endGiveawayById } = await import('../../commands/community/giveaway.js');
+  const { endGiveawayById } = await import('../../events/client/giveawayHandler.js');
 
   const subcommand = interaction.options.getSubcommand();
 

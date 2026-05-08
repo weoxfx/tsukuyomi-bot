@@ -1,7 +1,58 @@
 import { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, EmbedBuilder, PermissionFlagsBits } from 'discord.js';
 import Birthday, { BirthdayRequest } from '../../models/Birthday.js';
 import Guild from '../../models/Guild.js';
-import { createTicketEmbed, createTicketButtons, MONTH_NAMES } from '../../commands/community/requestbirthday.js';
+const MONTH_NAMES = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function createTicketEmbed(request, targetUser, currentBirthday) {
+  const { month, day, year } = request.requestedBirthday;
+  const statusColors = { open: 0x5865F2, approved: 0x57F287, rejected: 0xED4245, cancelled: 0x99AAB5 };
+  const statusEmoji = { open: '🎫', approved: '✅', rejected: '❌', cancelled: '🚫' };
+  const embed = new EmbedBuilder()
+    .setColor(statusColors[request.status] || 0x5865F2)
+    .setTitle(`${statusEmoji[request.status] || '🎫'} Birthday Ticket ${request.getFormattedTicketNumber()}`)
+    .addFields(
+      { name: '👤 User', value: targetUser ? `${targetUser.tag}\n<@${targetUser.id}>` : `<@${request.userId}>`, inline: true },
+      { name: '📅 Requested Birthday', value: `${MONTH_NAMES[month - 1]} ${day}${year ? `, ${year}` : ''}`, inline: true },
+      { name: '📋 Status', value: request.status.charAt(0).toUpperCase() + request.status.slice(1), inline: true }
+    );
+  if (currentBirthday) {
+    const cb = currentBirthday;
+    embed.addFields({ name: '🎂 Current Birthday', value: `${MONTH_NAMES[(cb.month || 1) - 1]} ${cb.day}${cb.year ? `, ${cb.year}` : ''}`, inline: true });
+  }
+  if (request.rejectionReason) embed.addFields({ name: '❌ Rejection Reason', value: request.rejectionReason, inline: false });
+  if (request.staffNotes?.length > 0) {
+    const latest = request.staffNotes[request.staffNotes.length - 1];
+    embed.addFields({ name: '📝 Latest Note', value: latest.note, inline: false });
+  }
+  embed.setFooter({ text: `Priority: ${request.priority || 'normal'} • Submitted` }).setTimestamp(request.createdAt);
+  if (targetUser) embed.setThumbnail(targetUser.displayAvatarURL({ dynamic: true }));
+  return embed;
+}
+
+function createTicketButtons(request, isOpen) {
+  const { ActionRowBuilder: ARB, ButtonBuilder: BB, ButtonStyle: BS } = { ActionRowBuilder, ButtonBuilder, ButtonStyle: { Primary: 1, Secondary: 2, Success: 3, Danger: 4 } };
+  if (isOpen) {
+    return [
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`bday_ticket_approve_${request.requestId}`).setLabel('✅ Approve').setStyle(3),
+        new ButtonBuilder().setCustomId(`bday_ticket_reject_${request.requestId}`).setLabel('❌ Reject').setStyle(4),
+        new ButtonBuilder().setCustomId(`bday_ticket_note_${request.requestId}`).setLabel('📝 Note').setStyle(2),
+        new ButtonBuilder().setCustomId(`bday_ticket_user_${request.requestId}`).setLabel('👤 User Info').setStyle(2)
+      ),
+      new ActionRowBuilder().addComponents(
+        new ButtonBuilder().setCustomId(`bday_ticket_priority_low_${request.requestId}`).setLabel('⬇ Low').setStyle(2),
+        new ButtonBuilder().setCustomId(`bday_ticket_priority_normal_${request.requestId}`).setLabel('➡ Normal').setStyle(1),
+        new ButtonBuilder().setCustomId(`bday_ticket_priority_high_${request.requestId}`).setLabel('⬆ High').setStyle(4)
+      )
+    ];
+  }
+  return [
+    new ActionRowBuilder().addComponents(
+      new ButtonBuilder().setCustomId(`bday_ticket_reopen_${request.requestId}`).setLabel('🔄 Reopen').setStyle(2),
+      new ButtonBuilder().setCustomId(`bday_ticket_user_${request.requestId}`).setLabel('👤 User Info').setStyle(2)
+    )
+  ];
+}
 import { successEmbed, GLYPHS } from '../../utils/embeds.js';
 
 export default {
