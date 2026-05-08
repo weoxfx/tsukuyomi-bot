@@ -304,45 +304,6 @@ async function loadEvents() {
   logger.startup(`Loaded ${totalEvents} events`);
 }
 
-// Load music events specifically
-async function loadMusicEvents() {
-  const musicEventsPath = path.join(__dirname, "./events/music");
-  let totalMusicEvents = 0;
-
-  try {
-    const events = readdirSync(musicEventsPath).filter((file) =>
-      file.endsWith(".js"),
-    );
-
-    for (const file of events) {
-      try {
-        console.log("Loading audio event:", file);
-        const EventModule = await import(`./events/music/${file}`);
-        const EventClass = EventModule.default || EventModule;
-
-        if (typeof EventClass === "function") {
-          const evt = new EventClass(client, file);
-          const eventName = evt.name;
-          const eventHandler = (...args) => evt.run(...args);
-
-          // Register event with client
-          client.on(eventName, eventHandler);
-          totalMusicEvents++;
-        }
-      } catch (error) {
-        console.error(`Error loading music event ${file}:`, error);
-        logger.error(`Failed to load music event ${file}`, error);
-      }
-    }
-  } catch (error) {
-    console.error("Error reading music events directory:", error);
-    logger.error("Failed to read music events directory", error);
-  }
-
-  logger.startup(`Loaded ${totalMusicEvents} music events`);
-  console.log(`Audio system events loaded: ${totalMusicEvents}`);
-}
-
 // Initialize bot
 async function initialize() {
   const startTime = Date.now();
