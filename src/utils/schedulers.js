@@ -4,7 +4,6 @@ import Event from '../models/Event.js';
 import Guild from '../models/Guild.js';
 import BoosterRole from '../models/BoosterRole.js';
 import { infoEmbed, GLYPHS } from '../utils/embeds.js';
-import { checkGiveaways } from '../events/client/giveawayHandler.js';
 import { checkReminders } from '../events/client/reminderHandler.js';
 import { cleanupTempChannels } from '../events/client/tempVoiceHandler.js';
 
@@ -346,15 +345,6 @@ export function startBoosterRoleRemover(client) {
   console.log('[RAPHAEL] Booster role removal scheduler initialized (runs daily at 1 AM).');
 }
 
-// Check giveaways every 15 seconds
-export function startGiveawayChecker(client) {
-  setInterval(async () => {
-    await checkGiveaways(client);
-  }, 15000);
-
-  console.log('[RAPHAEL] Giveaway monitoring system initialized.');
-}
-
 // Check reminders every 15 seconds for more timely delivery
 export function startReminderChecker(client) {
   // Run immediately on startup to catch any missed reminders
@@ -467,7 +457,6 @@ export function initializeSchedulers(client) {
   startEventChecker(client);
   startBirthdayRoleRemover(client);
   startBoosterRoleRemover(client);
-  startGiveawayChecker(client);
   startReminderChecker(client);
   startBotEconomyCleanup(client);
 
