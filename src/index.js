@@ -134,11 +134,11 @@ async function connectDatabase() {
     const duration = Date.now() - startTime;
     logger.database("MongoDB connection established", true);
     logger.performance("Database connection", duration);
-    console.log("[RAPHAEL] Database connection established.");
+    console.log("Database connection established.");
   } catch (error) {
     logger.database("MongoDB connection failed", false, error);
     logger.error("MongoDB connection error", error);
-    console.error("[RAPHAEL] Database connection failure:", error);
+    console.error("Database connection failure:", error);
     process.exit(1);
   }
 }
@@ -152,12 +152,12 @@ async function connectRedis() {
       logger.startup("Redis cache initialized");
     } else {
       console.log(
-        "[RAPHAEL] Redis unavailable, utilizing in-memory cache fallback.",
+        "Redis unavailable, utilizing in-memory cache fallback.",
       );
     }
   } catch (error) {
     console.log(
-      "[RAPHAEL] Redis connection failure, utilizing in-memory cache fallback.",
+      "Redis connection failure, utilizing in-memory cache fallback.",
     );
     logger.error("Redis connection error", error);
   }
@@ -197,7 +197,7 @@ async function loadCommands() {
                   );
                 }
                 console.log(
-                  `[RAPHAEL] Command loaded: ${commandInstance.name}`,
+                  `Command loaded: ${commandInstance.name}`,
                 );
                 return 1;
               }
@@ -214,7 +214,7 @@ async function loadCommands() {
                   client.aliases.set(alias, CommandClass.name),
                 );
               }
-              console.log(`[RAPHAEL] Command loaded: ${CommandClass.name}`);
+              console.log(`Command loaded: ${CommandClass.name}`);
               return 1;
             }
             return 0;
@@ -316,7 +316,7 @@ async function loadMusicEvents() {
 
     for (const file of events) {
       try {
-        console.log("[RAPHAEL] Loading audio event:", file);
+        console.log("Loading audio event:", file);
         const EventModule = await import(`./events/music/${file}`);
         const EventClass = EventModule.default || EventModule;
 
@@ -340,17 +340,17 @@ async function loadMusicEvents() {
   }
 
   logger.startup(`Loaded ${totalMusicEvents} music events`);
-  console.log(`[RAPHAEL] Audio system events loaded: ${totalMusicEvents}`);
+  console.log(`Audio system events loaded: ${totalMusicEvents}`);
 }
 
 // Initialize bot
 async function initialize() {
   const startTime = Date.now();
-  logger.startup("Starting RAPHAEL...");
+  logger.startup("Starting Tsukuyomi-bot...");
   logger.build("Bot version: 2.1.0");
   logger.build("Node version: " + process.version);
   logger.build("Environment: " + (process.env.NODE_ENV || "production"));
-  console.log("[RAPHAEL] Initiating system startup...");
+  console.log("Initiating system startup...");
 
   await connectDatabase();
   await connectRedis();
@@ -365,7 +365,7 @@ async function initialize() {
 
   // Initialize events after client is ready
   client.once("ready", async () => {
-    console.log("[RAPHAEL] Client connection established.");
+    console.log("Client connection established.");
     console.log(`   Logged in as: ${client.user.tag}`);
     console.log(`   Guilds: ${client.guilds.cache.size}`);
     console.log(`   WS Status: ${client.ws.status}, Ping: ${client.ws.ping}ms`);
@@ -374,11 +374,11 @@ async function initialize() {
     try {
       riffyManager.initialize();
       riffyManager.initializePlayer();
-      console.log("[RAPHAEL] Audio subsystem initialized.");
+      console.log("Audio subsystem initialized.");
     } catch (error) {
       logger.error("Failed to initialize music system:", error);
       console.error(
-        "[RAPHAEL] Audio subsystem initialization failure:",
+        "Audio subsystem initialization failure:",
         error.message,
       );
     }
@@ -405,7 +405,7 @@ async function initialize() {
     notifyStatusChange("online");
 
     console.log(
-      "[RAPHAEL] All systems operational. Awaiting commands, Master.",
+      "All systems operational. Awaiting commands...",
     );
   });
 }
@@ -443,9 +443,9 @@ async function initializeSecuritySystems(client) {
       await serverLogging.default.initialize(client);
     }
 
-    console.log("[RAPHAEL] Security and logging subsystems initialized.");
+    console.log("Security and logging subsystems initialized.");
   } catch (error) {
-    console.error("[RAPHAEL] Security systems initialization failure:", error);
+    console.error("Security systems initialization failure:", error);
     logger.error("Failed to initialize security systems", error);
   }
 }
@@ -457,7 +457,7 @@ async function registerSlashCommandsOnReady(client) {
       await import("./utils/slashCommands.js");
 
     // Clear guild-specific commands to remove duplicates (one-time cleanup)
-    console.log("[RAPHAEL] Clearing guild-specific commands...");
+    console.log("Clearing guild-specific commands...");
     for (const guild of client.guilds.cache.values()) {
       await clearGuildSlashCommands(client, guild.id);
     }
@@ -465,10 +465,10 @@ async function registerSlashCommandsOnReady(client) {
     // Register globally only
     const commandCount = await registerSlashCommands(client);
     console.log(
-      `[RAPHAEL] Slash commands registered globally: ${commandCount}`,
+      `Slash commands registered globally: ${commandCount}`,
     );
   } catch (error) {
-    console.error("[RAPHAEL] Slash command registration failure:", error);
+    console.error("Slash command registration failure:", error);
     logger.error("Failed to register slash commands", error);
   }
 }
@@ -487,7 +487,7 @@ process.on("uncaughtException", (error) => {
 
 // Graceful shutdown
 process.on("SIGINT", async () => {
-  console.log("\n🛑 Shutting down gracefully...");
+  console.log("\n🛑 Shutting down...");
   logger.info("Bot shutting down (SIGINT)");
 
   // Stop Spotify token refresh
@@ -499,12 +499,12 @@ process.on("SIGINT", async () => {
   // Close database connection
   await mongoose.connection.close();
 
-  console.log("[RAPHAEL] Shutdown sequence complete.");
+  console.log("Shutdown sequence complete.");
   process.exit(0);
 });
 
 process.on("SIGTERM", async () => {
-  console.log("\n[RAPHAEL] Initiating graceful shutdown...");
+  console.log("\nInitiating shutdown...");
   logger.info("Bot shutting down (SIGTERM)");
 
   // Stop Spotify token refresh
@@ -516,7 +516,7 @@ process.on("SIGTERM", async () => {
   // Close database connection
   await mongoose.connection.close();
 
-  console.log("[RAPHAEL] Shutdown sequence complete.");
+  console.log("Shutdown sequence complete.");
   process.exit(0);
 });
 
@@ -548,8 +548,8 @@ app.get("/health", (req, res) => {
 // Root endpoint
 app.get("/", (req, res) => {
   res.json({
-    name: "RAPHAEL",
-    version: "2.1.0",
+    name: "Tsukuyomi",
+    version: "1.0",
     status: "running",
     message: "Bot is online and operational",
     endpoints: {
@@ -621,7 +621,7 @@ async function notifyStatusChange(status) {
           .setTitle(`『 System Status Update 』`)
           .setDescription(
             status === "online"
-              ? "**Confirmed:** All systems online and operational, Master."
+              ? "**Confirmed:** All systems online and operational."
               : "**Warning:** System offline. Initiating reconnection protocol...",
           )
           .setColor(status === "online" ? "#00FF7F" : "#ff4757")
