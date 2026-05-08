@@ -1,9 +1,8 @@
-import { PermissionFlagsBits, EmbedBuilder, ActionRowBuilder, StringSelectMenuBuilder } from 'discord.js';
+import { PermissionFlagsBits, EmbedBuilder } from 'discord.js';
 import Guild from '../../models/Guild.js';
 import { successEmbed, errorEmbed, infoEmbed, GLYPHS } from '../../utils/embeds.js';
 import { hasModPerms } from '../../utils/helpers.js';
 
-// Define feature categories and their associated commands
 const featureCategories = {
   economy: {
     name: '💰 Economy',
@@ -25,22 +24,6 @@ const featureCategories = {
     name: '😂 Fun',
     commands: ['meme', 'gif', 'poll']
   },
-  birthdays: {
-    name: '🎂 Birthdays',
-    commands: ['birthday', 'setbirthday', 'mybirthday', 'birthdays', 'requestbirthday', 'approvebday', 'rejectbday', 'cancelbirthday', 'removebirthday', 'birthdaypreference', 'birthdayrequests', 'birthdayconfig']
-  },
-  giveaways: {
-    name: '🎉 Giveaways',
-    commands: ['giveaway', 'gstart', 'gend', 'greroll']
-  },
-  events: {
-    name: '📅 Events',
-    commands: ['createevent', 'events', 'joinevent', 'cancelevent']
-  },
-  starboard: {
-    name: '⭐ Starboard',
-    commands: ['starboard']
-  },
   tickets: {
     name: '🎫 Tickets',
     commands: ['ticket', 'ticketpanel']
@@ -48,14 +31,6 @@ const featureCategories = {
   afk: {
     name: '💤 AFK',
     commands: ['afk']
-  },
-  reminders: {
-    name: '⏰ Reminders',
-    commands: ['remind', 'reminder']
-  },
-  automod: {
-    name: '🛡️ AutoMod',
-    commands: ['automod']
   },
   welcome: {
     name: '👋 Welcome & Goodbye',
@@ -69,12 +44,7 @@ const featureCategories = {
   },
   profilecustomization: {
     name: '🎨 Profile Customization',
-    commands: [], // Special feature - not command-based
-    isFeatureToggle: true
-  },
-  aichat: {
-    name: '🤖 AI Chat (Raphael)',
-    commands: [], // Special feature - not command-based
+    commands: [],
     isFeatureToggle: true
   }
 };
@@ -94,7 +64,6 @@ export default {
     const guildId = message.guild.id;
     const guildConfig = await Guild.getGuild(guildId);
 
-    // Check for moderator permissions (admin, mod role, or ManageGuild)
     if (!hasModPerms(message.member, guildConfig)) {
       return message.reply({
         embeds: [await errorEmbed(guildId, 'Permission Denied',
@@ -102,28 +71,22 @@ export default {
       });
     }
 
-    // No args - show interactive menu
     if (!args[0]) {
       return showFeatureMenu(message, guildConfig);
     }
 
     const action = args[0].toLowerCase();
 
-    // List all disabled
     if (action === 'list' || action === 'disabled') {
       return showDisabledList(message, guildConfig);
     }
 
-    // Status of a feature
     if (action === 'status') {
       const feature = args[1]?.toLowerCase();
-      if (!feature) {
-        return showFeatureMenu(message, guildConfig);
-      }
+      if (!feature) return showFeatureMenu(message, guildConfig);
       return showFeatureStatus(message, guildConfig, feature);
     }
 
-    // Enable/disable
     if (action === 'enable' || action === 'disable') {
       const target = args[1]?.toLowerCase();
       if (!target) {
@@ -136,42 +99,31 @@ export default {
         );
         return message.reply({ embeds: [embed] });
       }
-
       return toggleFeature(message, guildConfig, target, action === 'enable', client);
     }
 
-    // If first arg is a feature name directly
     if (featureCategories[action]) {
       return showFeatureStatus(message, guildConfig, action);
     }
 
-    // Show help
     return showFeatureMenu(message, guildConfig);
   }
 };
 
 async function showFeatureMenu(message, guildConfig) {
-  const guildId = message.guild.id;
   const disabledText = guildConfig.textCommands?.disabledCommands || [];
   const disabledSlash = guildConfig.slashCommands?.disabledCommands || [];
 
   let description = `**Manage bot features and commands**\n\n`;
 
   for (const [key, category] of Object.entries(featureCategories)) {
-    // Handle special feature toggles
     if (category.isFeatureToggle) {
-      if (key === 'aichat') {
-        const aiEnabled = guildConfig.features?.aiChat?.enabled;
-        const status = aiEnabled ? '✅' : '❌';
-        description += `${status} **${category.name}** - Feature toggle\n`;
-      } else if (key === 'profilecustomization') {
-        const profileEnabled = guildConfig.economy?.profileCustomization?.enabled !== false; // Default true
-        const status = profileEnabled ? '✅' : '❌';
-        description += `${status} **${category.name}** - Feature toggle\n`;
+      if (key === 'profilecustomization') {
+        const enabled = guildConfig.economy?.profileCustomization?.enabled !== false;
+        description += `${enabled ? '✅' : '❌'} **${category.name}** - Feature toggle\n`;
       } else if (key === 'boost') {
-        const boostEnabled = guildConfig.features?.boostSystem?.enabled;
-        const status = boostEnabled ? '✅' : '❌';
-        description += `${status} **${category.name}** - Feature toggle\n`;
+        const enabled = guildConfig.features?.boostSystem?.enabled;
+        description += `${enabled ? '✅' : '❌'} **${category.name}** - Feature toggle\n`;
       }
       continue;
     }
@@ -181,15 +133,6 @@ async function showFeatureMenu(message, guildConfig) {
     ).length;
     const status = disabledCount === 0 ? '✅' : disabledCount === category.commands.length ? '❌' : '⚠️';
     description += `${status} **${category.name}** - ${category.commands.length} commands\n`;
-  }
-
-  // Add AI Chat separately at the end
-  const aiEnabled = guildConfig.features?.aiChat?.enabled;
-  const trollEnabled = guildConfig.features?.aiChat?.trollMode;
-  description += `\n**Special Features:**\n`;
-  description += `${aiEnabled ? '✅' : '❌'} **🤖 AI Chat (Raphael)**\n`;
-  if (aiEnabled) {
-    description += `  └─ ${trollEnabled ? '😈' : '😇'} Troll Mode: ${trollEnabled ? 'Enabled' : 'Disabled'}\n`;
   }
 
   description += `\n**Commands:**\n`;
@@ -238,34 +181,8 @@ async function showDisabledList(message, guildConfig) {
 async function showFeatureStatus(message, guildConfig, feature) {
   const guildId = message.guild.id;
 
-  // Handle AI Chat specially
-  if (feature === 'aichat' || feature === 'ai' || feature === 'raphael') {
-    const aiConfig = guildConfig.features?.aiChat || {};
-    const embed = new EmbedBuilder()
-      .setTitle('🤖 AI Chat (Raphael) Status')
-      .setColor(aiConfig.enabled ? '#00FF7F' : '#FF4757')
-      .setDescription(
-        `**Status:** ${aiConfig.enabled ? '✅ Enabled' : '❌ Disabled'}\n` +
-        `**Troll Mode:** ${aiConfig.trollMode ? '😈 Enabled' : '😇 Disabled'}\n\n` +
-        `**How to use:**\n` +
-        `• Mention the bot and ask a question\n` +
-        `• Reply to the bot's messages\n\n` +
-        `**Personality:** Raphael (from Tensura)\n` +
-        `**Powered by:** Pollinations AI (Free)\n\n` +
-        `**Commands:**\n` +
-        `${GLYPHS.ARROW_RIGHT} \`feature enable aichat\` - Enable AI Chat\n` +
-        `${GLYPHS.ARROW_RIGHT} \`feature disable aichat\` - Disable AI Chat\n` +
-        `${GLYPHS.ARROW_RIGHT} \`feature enable troll\` - Enable Troll Mode 😈\n` +
-        `${GLYPHS.ARROW_RIGHT} \`feature disable troll\` - Disable Troll Mode`
-      )
-      .setFooter({ text: 'No API key required - uses free Pollinations AI' });
-
-    return message.reply({ embeds: [embed] });
-  }
-
-  // Handle Profile Customization specially
   if (feature === 'profilecustomization' || feature === 'profilecustom' || feature === 'customization') {
-    const profileEnabled = guildConfig.economy?.profileCustomization?.enabled !== false; // Default true
+    const profileEnabled = guildConfig.economy?.profileCustomization?.enabled !== false;
     const cardOverlay = guildConfig.economy?.cardOverlay || { color: '#000000', opacity: 0.5 };
 
     const embed = new EmbedBuilder()
@@ -294,25 +211,21 @@ async function showFeatureStatus(message, guildConfig, feature) {
     return message.reply({ embeds: [embed] });
   }
 
-  // Handle Boost System specially
   if (feature === 'boost' || feature === 'boostsystem' || feature === 'boosts') {
     const boostConfig = guildConfig.features?.boostSystem || {};
     const boostChannel = boostConfig.channelId ? message.guild.channels.cache.get(boostConfig.channelId) : null;
 
     const embed = new EmbedBuilder()
-      .setTitle('🚀 Boost Announcements Status')
+      .setTitle('💎 Server Boost Status')
       .setColor(boostConfig.enabled ? '#FF73FA' : '#FF4757')
       .setDescription(
         `**Status:** ${boostConfig.enabled ? '✅ Enabled' : '❌ Disabled'}\n` +
-        `**Channel:** ${boostChannel ? `<#${boostChannel.id}>` : 'Not set'}\n` +
-        `**Embed Mode:** ${boostConfig.embedEnabled !== false ? '✅' : '❌'}\n\n` +
+        `**Channel:** ${boostChannel ? `<#${boostChannel.id}>` : 'Not set'}\n\n` +
         `**Commands:**\n` +
         `${GLYPHS.ARROW_RIGHT} \`feature enable boost\` - Enable boost announcements\n` +
         `${GLYPHS.ARROW_RIGHT} \`feature disable boost\` - Disable boost announcements\n` +
         `${GLYPHS.ARROW_RIGHT} \`boost channel #channel\` - Set boost channel\n` +
-        `${GLYPHS.ARROW_RIGHT} \`boost message <text>\` - Set thank you message\n` +
-        `${GLYPHS.ARROW_RIGHT} \`boost embed\` - Toggle embed format\n` +
-        `${GLYPHS.ARROW_RIGHT} \`boost test\` - Preview boost message`
+        `${GLYPHS.ARROW_RIGHT} \`boost message <text>\` - Set thank you message`
       )
       .setFooter({ text: 'Configure with the boost command' });
 
@@ -322,7 +235,6 @@ async function showFeatureStatus(message, guildConfig, feature) {
   const category = featureCategories[feature];
 
   if (!category) {
-    // Check if it's a single command
     const embed = await errorEmbed(guildId, 'Unknown Feature',
       `${GLYPHS.ERROR} \`${feature}\` is not a valid feature.\n\n` +
       `**Available features:**\n${Object.keys(featureCategories).map(f => `\`${f}\``).join(', ')}`
@@ -350,10 +262,7 @@ async function showFeatureStatus(message, guildConfig, feature) {
     .setTitle(`${category.name} Status`)
     .setDescription(commandStatus.join('\n'))
     .setColor(enabledCount === category.commands.length ? '#57F287' : enabledCount === 0 ? '#ED4245' : '#FEE75C')
-    .addFields({
-      name: 'Summary',
-      value: `${enabledCount}/${category.commands.length} commands enabled`
-    })
+    .addFields({ name: 'Summary', value: `${enabledCount}/${category.commands.length} commands enabled` })
     .setFooter({ text: '✅ Enabled | ❌ Disabled | ⚠️ Partially disabled' });
 
   return message.reply({ embeds: [embed] });
@@ -361,56 +270,9 @@ async function showFeatureStatus(message, guildConfig, feature) {
 
 async function toggleFeature(message, guildConfig, target, isEnabling, client) {
   const guildId = message.guild.id;
-  const category = featureCategories[target];
 
-  // Handle Troll Mode toggle
-  if (target === 'troll' || target === 'trollmode') {
-    // Check if AI Chat is enabled first
-    const aiEnabled = guildConfig.features?.aiChat?.enabled;
-    if (!aiEnabled && isEnabling) {
-      const embed = await errorEmbed(guildId, 'AI Chat Disabled',
-        `${GLYPHS.ERROR} AI Chat must be enabled before you can enable Troll Mode!\n\n` +
-        `Use \`feature enable aichat\` first.`
-      );
-      return message.reply({ embeds: [embed] });
-    }
-
-    await Guild.updateGuild(guildId, {
-      $set: { 'features.aiChat.trollMode': isEnabling }
-    });
-
-    const embed = await successEmbed(guildId,
-      `Troll Mode ${isEnabling ? 'Enabled 😈' : 'Disabled 😇'}`,
-      `${GLYPHS.SUCCESS} **Troll Mode** has been ${isEnabling ? 'enabled' : 'disabled'}.\n\n` +
-      (isEnabling
-        ? `Raphael is now in **chaos mode** - expect unhinged, chaotic, and absolutely based responses. 💀`
-        : `Raphael is back to normal - cheeky but reasonable.`)
-    );
-    return message.reply({ embeds: [embed] });
-  }
-
-  // Handle AI Chat specially (it's a feature toggle, not command-based)
-  if (target === 'aichat' || target === 'ai' || target === 'raphael') {
-    await Guild.updateGuild(guildId, {
-      $set: { 'features.aiChat.enabled': isEnabling }
-    });
-
-    const embed = await successEmbed(guildId,
-      `AI Chat ${isEnabling ? 'Enabled' : 'Disabled'}`,
-      `${GLYPHS.SUCCESS} **🤖 AI Chat (Raphael)** has been ${isEnabling ? 'enabled' : 'disabled'}.\n\n` +
-      (isEnabling
-        ? `Users can now chat with Raphael by mentioning <@${client.user.id}> or replying to the bot's messages.`
-        : `The AI chat feature is now disabled.`)
-    );
-    return message.reply({ embeds: [embed] });
-  }
-
-  // Handle Profile Customization toggle
   if (target === 'profilecustomization' || target === 'profilecustom' || target === 'customization') {
-    await Guild.updateGuild(guildId, {
-      $set: { 'economy.profileCustomization.enabled': isEnabling }
-    });
-
+    await Guild.updateGuild(guildId, { $set: { 'economy.profileCustomization.enabled': isEnabling } });
     const embed = await successEmbed(guildId,
       `Profile Customization ${isEnabling ? 'Enabled' : 'Disabled'}`,
       `${GLYPHS.SUCCESS} **🎨 Profile Customization** has been ${isEnabling ? 'enabled' : 'disabled'}.\n\n` +
@@ -418,42 +280,28 @@ async function toggleFeature(message, guildConfig, target, isEnabling, client) {
         ? `Users can now customize their own overlay color and opacity using:\n` +
         `• \`setprofile overlay color <hex>\`\n` +
         `• \`setprofile overlay opacity <0-100>\``
-        : `Users can no longer customize their overlay. Use \`setoverlay\` to set server-wide overlay settings:\n` +
-        `• \`setoverlay color <hex>\`\n` +
-        `• \`setoverlay opacity <0-100>\``)
+        : `Users can no longer customize their overlay. Use \`setoverlay\` to set server-wide overlay settings.`)
     );
     return message.reply({ embeds: [embed] });
   }
 
-  // Handle Boost System toggle
   if (target === 'boost' || target === 'boostsystem' || target === 'boosts') {
-    await Guild.updateGuild(guildId, {
-      $set: { 'features.boostSystem.enabled': isEnabling }
-    });
-
+    await Guild.updateGuild(guildId, { $set: { 'features.boostSystem.enabled': isEnabling } });
     const embed = await successEmbed(guildId,
       `Boost Announcements ${isEnabling ? 'Enabled' : 'Disabled'}`,
-      `${GLYPHS.SUCCESS} **🚀 Boost Announcements** have been ${isEnabling ? 'enabled' : 'disabled'}.\n\n` +
-      (isEnabling
-        ? `The bot will now send thank you messages when members boost the server.\n\n` +
-        `**Configure with:**\n` +
-        `• \`boost channel #channel\` - Set boost channel\n` +
-        `• \`boost message <text>\` - Set thank you message\n` +
-        `• \`boost embed\` - Enable/disable embed format`
-        : `Boost thank you messages have been disabled.`)
+      `${GLYPHS.SUCCESS} **💎 Boost Announcements** have been ${isEnabling ? 'enabled' : 'disabled'}.`
     );
     return message.reply({ embeds: [embed] });
   }
 
+  const category = featureCategories[target];
   let commandsToManage = [];
   let featureName = '';
 
   if (category) {
-    // It's a feature category
     commandsToManage = category.commands;
     featureName = category.name;
   } else {
-    // It's a single command - check if it exists
     const commandExists = client.commands.has(target) || client.aliases?.has(target);
     if (!commandExists) {
       const embed = await errorEmbed(guildId, 'Not Found',
@@ -463,7 +311,6 @@ async function toggleFeature(message, guildConfig, target, isEnabling, client) {
       );
       return message.reply({ embeds: [embed] });
     }
-
     const actualCommand = client.commands.get(target) || client.commands.get(client.aliases.get(target));
     commandsToManage = [actualCommand?.name || target];
     featureName = `Command: ${commandsToManage[0]}`;
@@ -471,7 +318,6 @@ async function toggleFeature(message, guildConfig, target, isEnabling, client) {
 
   const disabledText = [...(guildConfig.textCommands?.disabledCommands || [])];
   const disabledSlash = [...(guildConfig.slashCommands?.disabledCommands || [])];
-
   let skippedProtected = [];
 
   for (const cmd of commandsToManage) {
@@ -479,15 +325,12 @@ async function toggleFeature(message, guildConfig, target, isEnabling, client) {
       skippedProtected.push(cmd);
       continue;
     }
-
     if (isEnabling) {
-      // Remove from disabled lists
       const textIdx = disabledText.indexOf(cmd);
       if (textIdx > -1) disabledText.splice(textIdx, 1);
       const slashIdx = disabledSlash.indexOf(cmd);
       if (slashIdx > -1) disabledSlash.splice(slashIdx, 1);
     } else {
-      // Add to disabled lists
       if (!disabledText.includes(cmd)) disabledText.push(cmd);
       if (!disabledSlash.includes(cmd)) disabledSlash.push(cmd);
     }
@@ -502,18 +345,13 @@ async function toggleFeature(message, guildConfig, target, isEnabling, client) {
 
   let description = `${GLYPHS.SUCCESS} **${featureName}** has been ${isEnabling ? 'enabled' : 'disabled'}.\n\n`;
   description += `**Commands affected:** ${commandsToManage.length - skippedProtected.length}\n`;
-
   if (commandsToManage.length <= 10) {
     description += `**Commands:** ${commandsToManage.filter(c => !skippedProtected.includes(c)).map(c => `\`${c}\``).join(', ')}`;
   }
-
   if (skippedProtected.length > 0) {
     description += `\n\n⚠️ **Skipped (protected):** ${skippedProtected.map(c => `\`${c}\``).join(', ')}`;
   }
 
-  const embed = await successEmbed(guildId,
-    `Feature ${isEnabling ? 'Enabled' : 'Disabled'}`,
-    description
-  );
+  const embed = await successEmbed(guildId, `Feature ${isEnabling ? 'Enabled' : 'Disabled'}`, description);
   return message.reply({ embeds: [embed] });
 }

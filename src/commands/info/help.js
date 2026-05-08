@@ -53,7 +53,7 @@ const CATEGORY_INFO = {
   config: {
     emoji: '⚙️',
     name: 'Configuration',
-    description: 'Server setup, automod, and configuration',
+    description: 'Server setup and configuration',
     color: '#4ECDC4'
   },
   moderation: {
@@ -128,11 +128,6 @@ const COMMAND_EXAMPLES = {
   dice: ['dice 100', 'dice 500 high'],
   roulette: ['roulette 100 red', 'roulette 500 black', 'roulette 200 7'],
   
-  // Config - AutoMod
-  automod: ['automod enable', 'automod disable', 'automod status', 'automod badwords add word1,word2', 'automod antispam on', 'automod antiraid on'],
-  automodignore: ['automodignore add channel #general', 'automodignore remove channel #general', 'automodignore add role @Moderator', 'automodignore list'],
-  antinuke: ['antinuke enable', 'antinuke disable', 'antinuke whitelist @user', 'antinuke status'],
-  
   // Config - Welcome/Goodbye
   welcome: ['welcome enable', 'welcome disable', 'welcome channel #welcome', 'welcome message Welcome {user} to {server}!', 'welcome title ✦ Welcome ✦', 'welcome color #5432A6', 'welcome image <url>', 'welcome thumbnail avatar', 'welcome author username', 'welcome mention on', 'welcome greet Hey {user}!', 'welcome role @Member', 'welcome status', 'welcome test', 'welcome reset'],
   goodbye: ['goodbye enable', 'goodbye disable', 'goodbye channel #goodbye', 'goodbye message Goodbye {user}!', 'goodbye status', 'goodbye test', 'goodbye reset'],
@@ -164,30 +159,8 @@ const COMMAND_EXAMPLES = {
   cmdchannels: ['cmdchannels add economy #bot-commands', 'cmdchannels remove economy #bot-commands', 'cmdchannels list'],
   colorroles: ['colorroles setup #color-roles', 'colorroles list'],
   reactionroles: ['reactionroles create', 'reactionroles add', 'reactionroles list'],
-  starboard: ['starboard channel #starboard', 'starboard threshold 3', 'starboard status'],
   rules: ['rules set 1 No spamming', 'rules remove 5', 'rules list', 'rules post #rules'],
   manageshop: ['manageshop add "Cool Badge" 1000 badge', 'manageshop remove 1', 'manageshop list'],
-  
-  // Community - Birthdays
-  setbirthday: ['setbirthday 25 12', 'setbirthday 01 01 2000'],
-  mybirthday: ['mybirthday'],
-  birthdays: ['birthdays', 'birthdays january'],
-  removebirthday: ['removebirthday @user'],
-  cancelbirthday: ['cancelbirthday'],
-  birthdaypreference: ['birthdaypreference dm on', 'birthdaypreference ping off'],
-  birthdayconfig: ['birthdayconfig channel #birthdays', 'birthdayconfig role @Birthday', 'birthdayconfig message Happy Birthday {user}!', 'birthdayconfig status'],
-  requestbirthday: ['requestbirthday 25 12'],
-  approvebday: ['approvebday @user'],
-  rejectbday: ['rejectbday @user'],
-  birthdayrequests: ['birthdayrequests'],
-  
-  // Community - Events & Giveaways
-  giveaway: ['giveaway 1h 1 Discord Nitro', 'giveaway 24h 3 Steam Gift Card'],
-  createevent: ['createevent "Movie Night" 2h Join us for a movie!'],
-  events: ['events'],
-  joinevent: ['joinevent 1'],
-  cancelevent: ['cancelevent 1'],
-  confession: ['confession I love this server'],
   
   // Utility
   top: ['top coins', 'top level', 'top rep'],
@@ -196,7 +169,6 @@ const COMMAND_EXAMPLES = {
   banner: ['banner', 'banner @user'],
   poll: ['poll "Should we have movie night?"', 'poll "Best color?" Red Blue Green'],
   afk: ['afk', 'afk brb dinner'],
-  remind: ['remind 1h Check the oven', 'remind 30m Meeting'],
   tempvc: ['tempvc create Gaming', 'tempvc limit 5', 'tempvc rename Chill Zone'],
   ticket: ['ticket create', 'ticket close', 'ticket add @user'],
   embed: ['embed create', 'embed edit <messageId>'],
@@ -211,19 +183,12 @@ const COMMAND_EXAMPLES = {
   checkuser: ['checkuser @user', 'checkuser 123456789'],
   ping: ['ping'],
   
-  // Social
-  marry: ['marry @user'],
-  divorce: ['divorce'],
-  badges: ['badges', 'badges @user'],
-  
   // Fun
   tictactoe: ['tictactoe @user'],
   trivia: ['trivia', 'trivia science'],
   meme: ['meme'],
   gif: ['gif cat', 'gif dance'],
   
-  // AI Chat
-  aichat: ['@Raphael hello!', '@Raphael what is the weather?', 'Reply to bot messages']
 };
 
 export default {
@@ -535,10 +500,6 @@ function createFeaturesEmbed(prefix, client) {
 
   const features = [
     {
-      name: '▸ Moderation & AutoMod',
-      value: 'Bans, kicks, warnings, timeouts, anti-spam, anti-raid, anti-nuke, bad word filter, and more.'
-    },
-    {
       name: '▸ Economy System',
       value: 'Daily rewards, coins, leveling, XP multipliers, profiles, backgrounds, and shop system.'
     },
@@ -547,20 +508,24 @@ function createFeaturesEmbed(prefix, client) {
       value: 'Coinflip, slots, dice, roulette, and blackjack with customizable betting.'
     },
     {
-      name: '▸ Community Features',
-      value: 'Birthdays, events, giveaways, starboard, tickets, and welcome messages.'
+      name: '▸ Fun & Games',
+      value: 'Trivia, TicTacToe, memes, GIFs, and polls.'
+    },
+    {
+      name: '▸ Tickets & AFK',
+      value: 'Support ticket system and AFK status tracking.'
+    },
+    {
+      name: '▸ Welcome & Server Boost',
+      value: 'Customizable welcome/goodbye messages and boost announcements.'
+    },
+    {
+      name: '▸ Profile Customization',
+      value: 'Custom backgrounds, overlays, bios, and profile cards.'
     },
     {
       name: '▸ Customization',
       value: 'Custom prefix, autoroles, reaction roles, color roles, and embed styling.'
-    },
-    {
-      name: '▸ Logging',
-      value: 'Message logs, member logs, moderation logs, and voice channel logs.'
-    },
-    {
-      name: '▸ Security',
-      value: 'Verification system, anti-nuke protection, and permission management.'
     }
   ];
 
