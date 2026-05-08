@@ -10,7 +10,7 @@ const guildSchema = new mongoose.Schema({
   guildName: String,
   prefix: {
     type: String,
-    default: process.env.DEFAULT_PREFIX || '!'
+    default: process.env.DEFAULT_PREFIX || 't!'
   },
   features: {
     inviteVerification: {

@@ -238,15 +238,12 @@ async function loadEvents() {
   const skipFiles = [
     "antiNuke.js",
     "messageLogging.js",
-    "reminderHandler.js",
     "voiceLogging.js",
     "memberLogging.js",
     "serverLogging.js",
   ];
 
   for (const dir of eventsPath) {
-    if (dir === "music") continue;
-
     try {
       const events = readdirSync(
         path.join(__dirname, `./events/${dir}`),

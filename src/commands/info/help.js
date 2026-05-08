@@ -9,9 +9,9 @@ const COMMANDS_BY_CATEGORY = {
   admin: ['deployment', 'award', 'botlogs'],
   config: [
     'setup', 'config', 'feature', 'setprefix', 'setchannel', 'setrole', 'setcoin', 'setoverlay',
-    'automod', 'automodignore', 'welcome', 'goodbye', 'boost', 'boostperks', 'antinuke', 'autopublish', 'autorole', 'cmdchannels',
+    'welcome', 'goodbye', 'boost', 'boostperks', 'antinuke', 'autopublish', 'autorole', 'cmdchannels',
     'manageshop', 'colorroles', 'levelroles', 'levelup', 'noxp', 'reactionroles', 'xpmultiplier', 'cleanup', 'logs', 'rules',
-    'starboard', 'onboarding', 'birthdayconfig', 'fixlogs'
+    'onboarding', 'fixlogs'
   ],
   moderation: ['warn', 'kick', 'ban', 'purge', 'userhistory', 'timeout', 'untimeout', 'lockdown', 'verify'],
   economy: [
@@ -19,17 +19,11 @@ const COMMANDS_BY_CATEGORY = {
     'adventure', 'rep', 'claim'
   ],
   gambling: ['coinflip', 'slots', 'dice', 'roulette', 'blackjack'],
-  community: [
-    'setbirthday', 'birthdays', 'removebirthday', 'birthdaypreference', 'birthdayconfig', 'mybirthday',
-    'requestbirthday', 'approvebday', 'rejectbday', 'birthdayrequests', 'cancelbirthday',
-    'createevent', 'events', 'joinevent', 'cancelevent', 'giveaway', 'starboard', 'confession'
-  ],
-  social: ['marry', 'divorce', 'badges'],
   fun: ['tictactoe', 'trivia'],
   info: ['help', 'ping', 'serverinfo', 'userinfo', 'checkuser', 'roleinfo', 'channelinfo'],
   utility: [
     'leaderboard', 'top', 'stats', 'embed', 'embedset', 'embedhelp', 'afk', 'gif', 'meme',
-    'react', 'remind', 'tempvc', 'avatar', 'banner', 'steal', 'firstmessage', 'poll', 'ticket'
+    'react', 'tempvc', 'avatar', 'banner', 'steal', 'firstmessage', 'poll', 'ticket'
   ]
 };
 
@@ -38,15 +32,13 @@ const SLASH_COMMANDS = [
   // Moderation
   'ban', 'kick', 'warn', 'timeout', 'purge', 'userhistory', 'untimeout', 'verify', 'lockdown',
   // Config
-  'welcome', 'goodbye', 'boost', 'boostperks', 'autorole', 'noxp', 'automod', 'cmdchannels', 'logs', 'feature',
+  'welcome', 'goodbye', 'boost', 'boostperks', 'autorole', 'noxp', 'cmdchannels', 'logs', 'feature',
   'setrole', 'setchannel', 'config', 'setup', 'manageshop', 'setprefix', 'xpmultiplier',
-  'levelroles', 'levelup', 'starboard', 'rules', 'autopublish', 'cleanup', 'onboarding',
+  'levelroles', 'levelup', 'rules', 'autopublish', 'cleanup', 'onboarding',
   // Admin
   'award', 'deployment', 'botlogs',
   // Economy
   'balance', 'daily', 'level', 'profile', 'shop', 'inventory', 'rep', 'coinflip', 'slots', 'dice', 'roulette', 'blackjack', 'adventure',
-  // Community
-  'confession', 'birthday', 'event', 'starboard',
   // Info
   'help', 'ping', 'serverinfo', 'userinfo', 'channelinfo', 'roleinfo'
 ];
@@ -81,18 +73,6 @@ const CATEGORY_INFO = {
     name: 'Gambling',
     description: 'Test your luck with casino games',
     color: '#9B59B6'
-  },
-  community: {
-    emoji: '🎉',
-    name: 'Community',
-    description: 'Birthdays, events, giveaways, and more',
-    color: '#E91E63'
-  },
-  social: {
-    emoji: '💕',
-    name: 'Social',
-    description: 'Marriage and social interaction features',
-    color: '#FF69B4'
   },
   fun: {
     emoji: '🎮',

@@ -4,7 +4,7 @@ import { PermissionFlagsBits } from 'discord.js';
 // Get guild prefix
 export async function getPrefix(guildId) {
   const guild = await Guild.getGuild(guildId);
-  return guild?.prefix || process.env.DEFAULT_PREFIX || '!';
+  return guild?.prefix || process.env.DEFAULT_PREFIX || 't!';
 }
 
 // Check if user has permission
