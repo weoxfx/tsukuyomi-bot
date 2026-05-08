@@ -83,11 +83,7 @@ class MessageCreate extends Event {
       const hasBypassRole = guildConfig.commandChannels.bypassRoles?.some(roleId =>
         message.member.roles.cache.has(roleId)
       );
-      // Allow music commands in voice channel text chats
-      const isVoiceChannelChat = message.channel.isVoiceBased?.() || message.channel.type === 2;
-      const isMusicCommandInVoice = command.category === 'music' && isVoiceChannelChat;
-
-      if (!isAllowedChannel && !hasBypassRole && !isMusicCommandInVoice) {
+      if (!isAllowedChannel && !hasBypassRole) {
         // Silently ignore commands in non-allowed channels
         // Or optionally send a warning (delete after 5 seconds)
         const allowedChannelsList = guildConfig.commandChannels.channels
@@ -135,79 +131,6 @@ class MessageCreate extends Event {
             (x) => x === message.author.id
           );
           if (!findDev) return;
-        }
-      }
-    }
-    if (command.player) {
-      if (command.player.voice) {
-        if (!message.member.voice.channel)
-          return await safeReply({
-            content: `**Notice:** Voice channel connection required for the \`${command.name}\` skill, Master.`,
-          });
-        if (
-          !message.guild.members.me.permissions.has(PermissionFlagsBits.Connect)
-        )
-          return await safeReply({
-            content: `**Warning:** I lack \`CONNECT\` permissions for the \`${command.name}\` skill, Master.`,
-          });
-        if (
-          !message.guild.members.me.permissions.has(PermissionFlagsBits.Speak)
-        )
-          return await safeReply({
-            content: `**Warning:** I lack \`SPEAK\` permissions for the \`${command.name}\` skill, Master.`,
-          });
-        if (
-          message.member.voice.channel.type === ChannelType.GuildStageVoice &&
-          !message.guild.members.me.permissions.has(
-            PermissionFlagsBits.RequestToSpeak
-          )
-        )
-          return await safeReply({
-            content: `**Warning:** I lack \`REQUEST TO SPEAK\` permissions for the \`${command.name}\` skill, Master.`,
-          });
-        if (message.guild.members.me.voice.channel) {
-          if (
-            message.guild.members.me.voice.channelId !==
-            message.member.voice.channelId
-          )
-            return await safeReply({
-              content: `**Notice:** Please connect to <#${message.guild.members.me.voice.channel.id}> to use the \`${command.name}\` skill, Master.`,
-            });
-        }
-      }
-      if (command.player.active) {
-        const player = this.client.riffy?.players.get(message.guildId);
-        if (!player)
-          return await safeReply({
-            content: "**Notice:** No audio is currently playing, Master.",
-          });
-        if ((!player.queue || player.queue.length === 0) && !player.current)
-          return await safeReply({
-            content: "**Notice:** The playback queue is empty, Master.",
-          });
-      }
-      if (command.player.dj) {
-        const dj = this.client.db.getDj(message.guildId);
-        if (dj && dj.mode) {
-          const djRole = this.client.db.getRoles(message.guildId);
-          if (!djRole)
-            return await safeReply({
-              content: "**Warning:** DJ role has not been configured.",
-            });
-          const findDJRole = message.member.roles.cache.find((x) =>
-            djRole.map((y) => y.roleId).includes(x.id)
-          );
-          if (!findDJRole) {
-            if (
-              !message.member.permissions.has(PermissionFlagsBits.ManageGuild)
-            ) {
-              const msg = await safeReply({
-                content: "**Notice:** DJ role required for this skill, Master.",
-              });
-              if (msg) setTimeout(() => msg.delete().catch(() => { }), 5000);
-              return;
-            }
-          }
         }
       }
     }

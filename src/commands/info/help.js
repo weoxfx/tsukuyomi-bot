@@ -19,10 +19,6 @@ const COMMANDS_BY_CATEGORY = {
     'adventure', 'rep', 'claim'
   ],
   gambling: ['coinflip', 'slots', 'dice', 'roulette', 'blackjack'],
-  music: [
-    'play', 'pause', 'resume', 'skip', 'stop', 'queue', 'nowplaying', 'volume',
-    'shuffle', 'loop', 'seek', 'remove', 'clearqueue', 'skipto'
-  ],
   community: [
     'setbirthday', 'birthdays', 'removebirthday', 'birthdaypreference', 'birthdayconfig', 'mybirthday',
     'requestbirthday', 'approvebday', 'rejectbday', 'birthdayrequests', 'cancelbirthday',
@@ -46,9 +42,7 @@ const SLASH_COMMANDS = [
   'setrole', 'setchannel', 'config', 'setup', 'manageshop', 'setprefix', 'xpmultiplier',
   'levelroles', 'levelup', 'starboard', 'rules', 'autopublish', 'cleanup', 'onboarding',
   // Admin
-  'giveaway', 'award', 'deployment', 'botlogs',
-  // Music
-  'play', 'pause', 'resume', 'skip', 'stop', 'queue', 'nowplaying', 'volume', 'shuffle', 'loop', 'seek', 'remove', 'clearqueue', 'skipto',
+  'award', 'deployment', 'botlogs',
   // Economy
   'balance', 'daily', 'level', 'profile', 'shop', 'inventory', 'rep', 'coinflip', 'slots', 'dice', 'roulette', 'blackjack', 'adventure',
   // Community
@@ -87,12 +81,6 @@ const CATEGORY_INFO = {
     name: 'Gambling',
     description: 'Test your luck with casino games',
     color: '#9B59B6'
-  },
-  music: {
-    emoji: '🎵',
-    name: 'Music',
-    description: 'Play and control music in voice channels',
-    color: '#1DB954'
   },
   community: {
     emoji: '🎉',
@@ -139,14 +127,6 @@ const COMMAND_EXAMPLES = {
   verify: ['verify setup', 'verify panel', 'verify manual @user', 'verify config type button', 'verify config role @Verified', 'verify config unverifiedrole @Unverified', 'verify config channel #verify', 'verify config enable', 'verify config disable', 'verify status'],
   userhistory: ['userhistory @user', 'userhistory 123456789'],
   
-  // Music
-  play: ['play never gonna give you up', 'play https://youtube.com/watch?v=...', 'play lofi hip hop'],
-  skip: ['skip', 'skip 3'],
-  volume: ['volume 50', 'volume 100'],
-  seek: ['seek 1:30', 'seek 0:45'],
-  loop: ['loop track', 'loop queue', 'loop off'],
-  remove: ['remove 3'],
-  skipto: ['skipto 5'],
   
   // Economy
   daily: ['daily'],
@@ -585,10 +565,6 @@ function createFeaturesEmbed(prefix, client) {
     {
       name: '▸ Gambling Games',
       value: 'Coinflip, slots, dice, roulette, and blackjack with customizable betting.'
-    },
-    {
-      name: '▸ Music Player',
-      value: 'High-quality music from YouTube, Spotify, and more with queue management.'
     },
     {
       name: '▸ Community Features',

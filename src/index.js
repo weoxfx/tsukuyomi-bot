@@ -21,7 +21,6 @@ import Guild from "./models/Guild.js";
 import logger from "./utils/logger.js";
 import ServerData from "./database/server.js";
 import Utils from "./structures/Utils.js";
-import RiffyManager from "./music/RiffyManager.js";
 import redis from "./utils/redis.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -98,10 +97,6 @@ client.db = new ServerData();
 
 // Initialize utils
 client.utils = Utils;
-
-// Initialize Riffy Music Manager
-const riffyManager = new RiffyManager(client);
-client.riffyManager = riffyManager;
 
 // Configuration
 client.config = {
@@ -250,7 +245,6 @@ async function loadEvents() {
   ];
 
   for (const dir of eventsPath) {
-    // Skip music events - they are loaded separately
     if (dir === "music") continue;
 
     try {
@@ -331,24 +325,8 @@ async function initialize() {
     console.log(`   Guilds: ${client.guilds.cache.size}`);
     console.log(`   WS Status: ${client.ws.status}, Ping: ${client.ws.ping}ms`);
 
-    // Initialize Riffy Music System
-    try {
-      riffyManager.initialize();
-      riffyManager.initializePlayer();
-      console.log("Audio subsystem initialized.");
-    } catch (error) {
-      logger.error("Failed to initialize music system:", error);
-      console.error(
-        "Audio subsystem initialization failure:",
-        error.message,
-      );
-    }
-
     // Load event handlers
     await loadEvents();
-
-    // Load music events
-    await loadMusicEvents();
 
     // Initialize security systems
     await initializeSecuritySystems(client);
