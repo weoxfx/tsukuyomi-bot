@@ -6,62 +6,37 @@ import Guild from '../../models/Guild.js';
 
 // Accurate command lists based on actual files
 const COMMANDS_BY_CATEGORY = {
-  admin: ['deployment', 'award', 'botlogs'],
-  config: [
-    'setup', 'config', 'feature', 'setprefix', 'setchannel', 'setrole', 'setcoin', 'setoverlay',
-    'welcome', 'goodbye', 'boost', 'boostperks', 'antinuke', 'autopublish', 'autorole', 'cmdchannels',
-    'manageshop', 'colorroles', 'levelroles', 'levelup', 'noxp', 'reactionroles', 'xpmultiplier', 'cleanup', 'logs', 'rules',
-    'onboarding', 'fixlogs'
-  ],
-  moderation: ['warn', 'kick', 'ban', 'purge', 'userhistory', 'timeout', 'untimeout', 'lockdown', 'verify'],
   economy: [
     'daily', 'balance', 'level', 'profile', 'shop', 'inventory', 'setprofile', 'setbackground',
     'adventure', 'rep', 'claim'
   ],
   gambling: ['coinflip', 'slots', 'dice', 'roulette', 'blackjack'],
-  fun: ['tictactoe', 'trivia'],
-  info: ['help', 'ping', 'serverinfo', 'userinfo', 'checkuser', 'roleinfo', 'channelinfo'],
-  utility: [
-    'leaderboard', 'top', 'stats', 'embed', 'embedset', 'embedhelp', 'afk', 'gif', 'meme',
-    'react', 'tempvc', 'avatar', 'banner', 'steal', 'firstmessage', 'poll', 'ticket'
-  ]
+  fun: ['tictactoe', 'trivia', 'meme', 'gif', 'poll'],
+  utility: ['afk', 'ticket', 'leaderboard', 'avatar', 'banner', 'tempvc', 'stats'],
+  welcome: ['welcome', 'goodbye'],
+  config: [
+    'setup', 'feature', 'setprefix', 'setchannel', 'setrole', 'setoverlay',
+    'autorole', 'cmdchannels', 'manageshop', 'levelroles', 'levelup',
+    'noxp', 'xpmultiplier', 'logs', 'boost'
+  ],
+  moderation: ['warn', 'kick', 'ban', 'purge', 'timeout', 'untimeout', 'lockdown', 'verify'],
+  info: ['help', 'ping', 'serverinfo', 'userinfo', 'roleinfo', 'channelinfo'],
 };
 
 // Slash commands available
 const SLASH_COMMANDS = [
-  // Moderation
-  'ban', 'kick', 'warn', 'timeout', 'purge', 'userhistory', 'untimeout', 'verify', 'lockdown',
-  // Config
-  'welcome', 'goodbye', 'boost', 'boostperks', 'autorole', 'noxp', 'cmdchannels', 'logs', 'feature',
-  'setrole', 'setchannel', 'config', 'setup', 'manageshop', 'setprefix', 'xpmultiplier',
-  'levelroles', 'levelup', 'rules', 'autopublish', 'cleanup', 'onboarding',
-  // Admin
-  'award', 'deployment', 'botlogs',
   // Economy
   'balance', 'daily', 'level', 'profile', 'shop', 'inventory', 'rep', 'coinflip', 'slots', 'dice', 'roulette', 'blackjack', 'adventure',
+  // Config
+  'welcome', 'goodbye', 'boost', 'autorole', 'noxp', 'cmdchannels', 'logs', 'feature',
+  'setrole', 'setchannel', 'setup', 'manageshop', 'setprefix', 'xpmultiplier', 'levelroles', 'levelup',
+  // Moderation
+  'ban', 'kick', 'warn', 'timeout', 'purge', 'untimeout', 'verify', 'lockdown',
   // Info
   'help', 'ping', 'serverinfo', 'userinfo', 'channelinfo', 'roleinfo'
 ];
 
 const CATEGORY_INFO = {
-  admin: {
-    emoji: '👑',
-    name: 'Admin',
-    description: 'Bot owner and administrator commands',
-    color: '#FF6B6B'
-  },
-  config: {
-    emoji: '⚙️',
-    name: 'Configuration',
-    description: 'Server setup and configuration',
-    color: '#4ECDC4'
-  },
-  moderation: {
-    emoji: '🛡️',
-    name: 'Moderation',
-    description: 'Keep your server safe and moderated',
-    color: '#FF8C00'
-  },
   economy: {
     emoji: '💰',
     name: 'Economy',
@@ -77,20 +52,38 @@ const CATEGORY_INFO = {
   fun: {
     emoji: '🎮',
     name: 'Fun & Games',
-    description: 'Interactive games and entertainment',
+    description: 'Games, memes, GIFs, and polls',
     color: '#00CED1'
-  },
-  info: {
-    emoji: 'ℹ️',
-    name: 'Information',
-    description: 'Bot and server information commands',
-    color: '#5865F2'
   },
   utility: {
     emoji: '🔧',
     name: 'Utility',
-    description: 'Handy tools and utility commands',
+    description: 'AFK, tickets, leaderboard, and handy tools',
     color: '#95A5A6'
+  },
+  welcome: {
+    emoji: '👋',
+    name: 'Welcome & Goodbye',
+    description: 'Welcome and goodbye message settings',
+    color: '#2ECC71'
+  },
+  config: {
+    emoji: '⚙️',
+    name: 'Configuration',
+    description: 'Server setup and configuration',
+    color: '#4ECDC4'
+  },
+  moderation: {
+    emoji: '🛡️',
+    name: 'Moderation',
+    description: 'Keep your server safe and moderated',
+    color: '#FF8C00'
+  },
+  info: {
+    emoji: 'ℹ️',
+    name: 'Information',
+    description: 'Bot and server information',
+    color: '#5865F2'
   }
 };
 

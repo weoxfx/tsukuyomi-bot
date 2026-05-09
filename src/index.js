@@ -130,11 +130,27 @@ async function connectDatabase() {
     logger.database("MongoDB connection established", true);
     logger.performance("Database connection", duration);
     console.log("Database connection established.");
+    await migratePrefix();
   } catch (error) {
     logger.database("MongoDB connection failed", false, error);
     logger.error("MongoDB connection error", error);
     console.error("Database connection failure:", error);
     process.exit(1);
+  }
+}
+
+// One-time migration: update all guilds still using the old r! prefix
+async function migratePrefix() {
+  try {
+    const result = await Guild.updateMany(
+      { prefix: 'r!' },
+      { $set: { prefix: 't!' } }
+    );
+    if (result.modifiedCount > 0) {
+      console.log(`[MIGRATION] Updated prefix from r! to t! for ${result.modifiedCount} guild(s).`);
+    }
+  } catch (error) {
+    console.error('[MIGRATION] Prefix migration failed:', error.message);
   }
 }
 
